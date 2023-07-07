@@ -51,6 +51,42 @@ namespace FairyGUI
         private static StringBuilder sbFinal = new StringBuilder();
         private static StringBuilder sbReverse = new StringBuilder();
 
+        private const char FRIBIDI_CHAR_FILL = (char)0xFEFF;
+
+        private static readonly Dictionary<char, Dictionary<char, char>> MANDATORY_LIGA_TABLE = new Dictionary<char, Dictionary<char, char>>
+        {
+            {(char) 0xFEDF, new Dictionary<char, char>()
+            {
+                { (char) 0xFE82, (char) 0xFEF5},
+                { (char) 0xFE84, (char) 0xFEF7},
+                { (char) 0xFE88, (char) 0xFEF9},
+                { (char) 0xFE8E, (char) 0xFEFB}
+            }},
+            {(char) 0xFEE0, new Dictionary<char, char>()
+            {
+                { (char) 0xFE82, (char) 0xFEF6},
+                { (char) 0xFE84, (char) 0xFEF8},
+                { (char) 0xFE88, (char) 0xFEFA},
+                { (char) 0xFE8E, (char) 0xFEFC}
+            }}
+        };
+
+        private static void ReplaceMandatoryLigaLetters(int index, StringBuilder str)
+        {
+            if (index < 1)
+                return;
+
+            char first = str[index - 1];
+            if (MANDATORY_LIGA_TABLE.TryGetValue(first, out var map))
+            {
+                if (map.TryGetValue(str[index], out char replace))
+                {
+                    str[index - 1] = FRIBIDI_CHAR_FILL;
+                    str[index] = replace;
+                }
+            }
+        }
+
         public static bool IsArabicLetter(char ch)
         {
             if (ch >= 0x600 && ch <= 0x6ff)
@@ -176,6 +212,7 @@ namespace FairyGUI
             int num = input;
             if ((num != 0x622) && (num != 0x623) && (num != 0x627) && (num != 0x62f) && (num != 0x625) &&
                 (num != 0x630) && (num != 0x631) && (num != 0x632) && (num != 0x698) && (num != 0x648) &&
+                (num != 0x6c6) && (num != 0x6c7) && (num != 0x6c8) && (num != 0x6d5) && (num != 0x6cb) &&
                 !_CheckSoundmark(input))
             {
                 return false;
@@ -303,6 +340,8 @@ namespace FairyGUI
                     perChar = sbFinal[i];
                     sbFinal[i] = mapping[sbFinal[i]][(int)CharState.middle];
                 }
+                
+                ReplaceMandatoryLigaLetters(i, sbFinal);
             }
             return sbFinal.ToString();
         }
@@ -601,6 +640,24 @@ namespace FairyGUI
 
             mapping.Add(0x6BE, new char[4] { (char)0xFEE9, (char)0xFEEA, (char)0xFEEB, (char)0xFEEC });
             mapping.Add(0x6CC, new char[4] { (char)0xFBFC, (char)0xFBFD, (char)0xFBFE, (char)0xFBFF });
+            
+            mapping.Add(0x6D5, new char[4] { (char)0xFEE9, (char)0xFEEA, (char)0xFEE9, (char)0xFEEA });   // Uy AE
+            mapping.Add(0x6AD, new char[4] { (char)0xFBD3, (char)0xFBD4, (char)0xFBD5, (char)0xFBD6 });   // Uy NG
+            mapping.Add(0x6C6, new char[4] { (char)0xFBD9, (char)0xFBDA, (char)0xFBD9, (char)0xFBDA });   // Uy OE
+            mapping.Add(0x6C7, new char[4] { (char)0xFBD7, (char)0xFBD8, (char)0xFBD7, (char)0xFBD8 });   // Uy U
+            mapping.Add(0x6C8, new char[4] { (char)0xFBDB, (char)0xFBDC, (char)0xFBDB, (char)0xFBDC });   // Uy YU
+            mapping.Add(0x6CB, new char[4] { (char)0xFBDE, (char)0xFBDF, (char)0xFBDE, (char)0xFBDF });   // Uy VE
+            mapping.Add(0x6D0, new char[4] { (char)0xFBE4, (char)0xFBE5, (char)0xFBE6, (char)0xFBE7 });   // Uy E
+
+//            mapping.Remove(0x6BE);
+//            mapping.Add(0x6BE, new char[4] { (char)0xFBAA, (char)0xFBAB, (char)0xFBAC, (char)0xFBAD });
+            mapping.Remove(0x649);
+            mapping.Add(0x649, new char[4] { (char)0xFEEF, (char)0xFEF0, (char)0xFBE8, (char)0xFBE9 });    // AlefMagsora
+//            mapping.Remove(0x64A);
+//            mapping.Add(0x64A, new char[4] { (char)0xFEF1, (char)0xFEF3, (char)0xFEF3, (char)0xFEF3 });    // Ya
+//            mapping.Remove(0x626);
+//            mapping.Add(0x626, new char[4] { (char)0xFEFB, (char)0xFEFB, (char)0xFE8B, (char)0xFE8C });    // HamzaNabera
+            
         }
 
         // 是否中立方向字符

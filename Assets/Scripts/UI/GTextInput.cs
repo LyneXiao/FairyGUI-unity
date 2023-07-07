@@ -12,7 +12,7 @@ namespace FairyGUI
         /// <summary>
         /// 
         /// </summary>
-        public InputTextField inputTextField { get; private set; }
+        public InputTextField inputTextField { get; protected set; }
 
         EventListener _onChanged;
         EventListener _onSubmit;
@@ -96,7 +96,7 @@ namespace FairyGUI
         /// <summary>
         /// 
         /// </summary>
-        public string promptText
+        public virtual string promptText
         {
             get { return inputTextField.promptText; }
             set { inputTextField.promptText = value; }

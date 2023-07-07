@@ -51,15 +51,15 @@ namespace FairyGUI
         public bool scrollItemToViewOnClick;
 
         string _defaultItem;
-        ListLayoutType _layout;
-        int _lineCount;
-        int _columnCount;
-        int _lineGap;
-        int _columnGap;
-        AlignType _align;
-        VertAlignType _verticalAlign;
-        bool _autoResizeItem;
-        Controller _selectionController;
+        protected ListLayoutType _layout;
+        protected int _lineCount;
+        protected int _columnCount;
+        protected int _lineGap;
+        protected int _columnGap;
+        protected AlignType _align;
+        protected VertAlignType _verticalAlign;
+        protected bool _autoResizeItem;
+        protected Controller _selectionController;
 
         GObjectPool _pool;
         int _lastSelectedIndex;
@@ -68,16 +68,16 @@ namespace FairyGUI
         EventListener _onRightClickItem;
 
         //Virtual List support
-        bool _virtual;
-        bool _loop;
-        int _numItems;
-        int _realNumItems;
-        int _firstIndex; //the top left index
-        int _curLineItemCount; //item count in one line
-        int _curLineItemCount2; //只用在页面模式，表示垂直方向的项目数
-        Vector2 _itemSize;
-        int _virtualListChanged; //1-content changed, 2-size changed
-        uint itemInfoVer; //用来标志item是否在本次处理中已经被重用了
+        protected bool _virtual;
+        protected bool _loop;
+        protected int _numItems;
+        protected int _realNumItems;
+        protected int _firstIndex; //the top left index
+        protected int _curLineItemCount; //item count in one line
+        protected int _curLineItemCount2; //只用在页面模式，表示垂直方向的项目数
+        protected Vector2 _itemSize;
+        protected int _virtualListChanged; //1-content changed, 2-size changed
+        protected uint itemInfoVer; //用来标志item是否在本次处理中已经被重用了
 
         int _miscFlags; //1-event locked, 2-focus events registered
 
@@ -2585,7 +2585,8 @@ namespace FairyGUI
 
                     if (curY != 0)
                         curY += _lineGap;
-                    child.y = curY;
+//                    child.y = curY;
+                    child.SetXY(0f, curY);
                     if (_autoResizeItem)
                         child.SetSize(viewWidth, child.height, true);
                     curY += Mathf.CeilToInt(child.height);
@@ -2604,6 +2605,8 @@ namespace FairyGUI
                             continue;
 
                         child.SetSize(viewWidth, child.height, true);
+                        if (child.width > maxWidth)
+                            maxWidth = child.width;
                     }
                 }
                 cw = Mathf.CeilToInt(maxWidth);
@@ -2618,7 +2621,8 @@ namespace FairyGUI
 
                     if (curX != 0)
                         curX += _columnGap;
-                    child.x = curX;
+//                    child.x = curX;
+                    child.SetXY(curX, 0f);
                     if (_autoResizeItem)
                         child.SetSize(child.width, viewHeight, true);
                     curX += Mathf.CeilToInt(child.width);
@@ -2637,6 +2641,8 @@ namespace FairyGUI
                             continue;
 
                         child.SetSize(child.width, viewHeight, true);
+                        if (child.height > maxHeight)
+                            maxHeight = child.height;
                     }
                 }
                 ch = Mathf.CeilToInt(maxHeight);
@@ -3064,4 +3070,4 @@ namespace FairyGUI
                 _selectionController = parent.GetControllerAt(i);
         }
     }
-}
+ }

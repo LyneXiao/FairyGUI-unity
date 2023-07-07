@@ -52,6 +52,35 @@ namespace FairyGUI
         };
         static List<LineCharInfo> sLineChars = new List<LineCharInfo>();
 
+#if true
+        /// <summary>
+        /// 需要合写的字符
+        /// </summary>
+        /// <param name="ch"></param>
+        /// <returns></returns>
+        private static bool IsCoWriting(char ch)
+        {
+            return ch >= 0 && ch <= 0x0B7F
+                   || ch >= 0x0C00 && ch <= 0x0DFF
+                   || ch >= 0x0E80 && ch <= 0x0EFF
+                   || ch >= 1000 && ch <= 0x1FFF;
+        }
+
+        /// <summary>
+        /// 独立拼写的单字字符
+        /// 0B80-0BFF：泰米尔文 (Tamil)
+        /// 0E00-0E7F：泰文 (Thai)
+        /// 0F00-0FFF：藏文 (Tibetan)
+        /// 2C80-2CFF：古埃及语 (Coptic)
+        /// </summary>
+        /// <param name="ch"></param>
+        /// <returns></returns>
+        private static bool IsIndependentWriting(char ch)
+        {
+            return !IsCoWriting(ch);
+        }
+#endif
+
         public TextField()
         {
             _flags |= Flags.TouchDisabled;
@@ -746,6 +775,7 @@ namespace FairyGUI
             line.y = line.y2 = GUTTER_Y;
             sLineChars.Clear();
 
+            var disableWrapWorld = _autoSize == AutoSizeType.Shrink;
             for (int charIndex = 0; charIndex < textLength; charIndex++)
             {
                 char ch = _parsedText[charIndex];
@@ -801,19 +831,30 @@ namespace FairyGUI
                         {
                             wordLen = 0;
                         }
+#if false
                         else if (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'
                             || ch >= '0' && ch <= '9'
                             || ch == '.' || ch == '"' || ch == '\''
                             || format.specialStyle == TextFormat.SpecialStyle.Subscript
                             || format.specialStyle == TextFormat.SpecialStyle.Superscript
                             || _textDirection != RTLSupport.DirectionType.UNKNOW && RTLSupport.IsArabicLetter(ch))
+#else
+                        else if ((disableWrapWorld && IsCoWriting(ch))
+                            || (!disableWrapWorld && (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9'))
+                            || ch == '.' || ch == '"' || ch == '\''
+                            || format.specialStyle == TextFormat.SpecialStyle.Subscript
+                            || format.specialStyle == TextFormat.SpecialStyle.Superscript
+                            || _textDirection != RTLSupport.DirectionType.UNKNOW && RTLSupport.IsArabicLetter(ch))
+#endif
                         {
                             wordLen++;
                         }
-                        else
+                        else if (!disableWrapWorld)
+                        {
                             wordPossible = false;
+                        }
                     }
-                    else if (char.IsWhiteSpace(ch))
+                    else if (char.IsWhiteSpace(ch) || (disableWrapWorld && IsIndependentWriting(ch)))
                     {
                         wordLen = 0;
                         wordPossible = true;
@@ -875,10 +916,14 @@ namespace FairyGUI
                             UpdateLineInfo(line, letterSpacing, lineCharCount - (toMoveChars + 1));
                             line.charCount++; //but keep it in this line.
                         }
-                        else
+                    	else if (!disableWrapWorld)
                         {
                             toMoveChars = lineCharCount > 1 ? 1 : 0; //if only one char here, we cant move it to new line
                             UpdateLineInfo(line, letterSpacing, lineCharCount - toMoveChars);
+	                    }
+	                    else
+	                    {
+	                        continue;
                         }
 
                         LineInfo newLine = LineInfo.Borrow();

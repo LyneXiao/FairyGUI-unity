@@ -54,6 +54,22 @@ namespace FairyGUI
             return false;
         }
 
+        internal static void KillAllTweens(bool completed = false)
+        {
+            int cnt = _totalActiveTweens;
+            for (int i = 0; i < cnt; i++)
+            {
+                GTweener tweener = _activeTweens[i];
+                if (tweener != null && !tweener._killed)
+                {
+                    tweener.Kill(completed);
+                    Debug.LogWarningFormat("There has some tweener not killed {0}", tweener);
+                }
+            }
+            
+        }
+
+
         internal static bool KillTweens(object target, TweenPropType propType, bool completed)
         {
             if (target == null)

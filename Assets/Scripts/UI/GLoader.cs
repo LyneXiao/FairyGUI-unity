@@ -15,14 +15,15 @@ namespace FairyGUI
         /// </summary>
         public bool showErrorSign;
 
-        string _url;
+        protected string _url;
+        protected PackageItem _contentItem;
+        
         AlignType _align;
         VertAlignType _verticalAlign;
         bool _autoSize;
         FillType _fill;
         bool _shrinkOnly;
         bool _updatingLayout;
-        PackageItem _contentItem;
         Action<NTexture> _reloadDelegate;
 
         MovieClip _content;

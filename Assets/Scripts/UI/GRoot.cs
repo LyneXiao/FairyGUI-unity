@@ -185,6 +185,8 @@ namespace FairyGUI
 
             if (i >= 0)
                 SetChildIndex(win, i);
+            
+            AdjustModalLayer();
         }
 
         /// <summary>
